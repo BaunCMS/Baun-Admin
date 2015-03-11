@@ -1,0 +1,28 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Create User - {% endblock %}
+
+{% block content %}
+	<div id="created-user" class="col-sm-4 col-sm-offset-4" style="margin-top:50px;">
+		<h1>User Created</h1>
+		<p>A user has been successfully generated. You need to copy this information into the
+		<code>users</code> section of<br>
+		<code>config/plugins/bauncms/baun-admin/admin.php</code>:</p>
+
+		<pre><code>return [
+
+    ...
+
+    'users' => [
+        '{{ user.email }}' => [
+            'email' => '{{ user.email }}',
+            'password' => '{{ user.password }}',
+            'role' => 'admin'
+        ]
+    ]
+
+];</code></pre>
+		<p>Once this has been completed you can continue.</p>
+		<a href="{{ base_url }}/admin/login" class="btn btn-primary">Continue</a>
+	</div>
+{% endblock %}

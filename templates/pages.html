@@ -1,0 +1,34 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Pages - {% endblock %}
+
+{% block content %}
+	<div id="pages">
+		<div class="well">
+			<a href="{{ base_url }}/admin/pages/create" class="btn btn-primary pull-right">Create Page</a>
+			<h1>Pages</h1>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Page</th>
+						<th>Path</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for page in pages %}
+						<tr>
+							<td>{{ page.route }}</td>
+							<td>{{ page.path }}</td>
+							<td style="text-align:right;">
+								<a href="{{ base_url }}/{% if page.route != '/' %}{{ page.route }}{% endif %}" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> View</a>
+								<a href="{{ base_url }}/admin/pages/edit?file={{ page.path|url_encode }}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+								<a href="{{ base_url }}/admin/pages/delete?file={{ page.path|url_encode }}"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+{% endblock %}

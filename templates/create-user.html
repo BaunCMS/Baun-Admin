@@ -1,0 +1,24 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Create User - {% endblock %}
+
+{% block content %}
+	<div id="create-user" class="col-sm-4 col-sm-offset-4" style="margin-top:50px;">
+		<h1>Create User</h1>
+		<p>Before you can login to the Baun Admin you need to create a user using the form below.</p>
+		{% if error %}
+			<div class="alert alert-danger" role="alert">{{ error }}</div>
+		{% endif %}
+		<form method="post" action="{{ base_url }}/admin/create-user">
+			<div class="form-group">
+				<label for="email">Email Address</label>
+				<input type="email" name="email" id="email" class="form-control" placeholder="Email Address" required autofocus>
+			</div>
+			<div class="form-group">
+				<label for="password">Password</label>
+				<input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+			</div>
+			<input type="submit" value="Create" class="btn btn-primary">
+		</form>
+	</div>
+{% endblock %}

@@ -8,7 +8,10 @@
             "email": "gilbert@pellegrom.me"
         }
     ],
-    "require": {},
+    "require": {
+        "symfony/http-foundation": "~2.6",
+        "ircmaxell/password-compat": "~1.0.4"
+    },
     "autoload": {
         "psr-4": {
             "BaunPlugin\\Admin\\": "src/"

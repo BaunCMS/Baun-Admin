@@ -1,0 +1,17 @@
+{
+    "name": "bauncms/baun-admin",
+    "description": "An Admin UI for Baun",
+    "keywords": ["baun-plugin"],
+    "authors": [
+        {
+            "name": "Gilbert Pellegrom",
+            "email": "gilbert@pellegrom.me"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "BaunPlugin\\Admin\\": "src/"
+        }
+    }
+}

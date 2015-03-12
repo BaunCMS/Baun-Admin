@@ -1,11 +1,11 @@
 {% extends "admin-layout.html" %}
 
-{% block title %}Create {{ label }} - {% endblock %}
+{% block title %}Edit {{ label }} - {% endblock %}
 
 {% block content %}
-	<div id="create-{{ type }}">
+	<div id="edit-{{ type }}">
 		<div class="well">
-			<h1>Create {{ label }}</h1>
+			<h1>Edit {{ label }}</h1>
 			{% if error %}
 				<div class="alert alert-danger" role="alert">{{ error }}</div>
 			{% endif %}
@@ -15,22 +15,26 @@
 					<div class="input-group">
 						{% if blog_path_base %}
 							<div class="input-group-addon">content/{{ blog_path_base }}/</div>
-							<input type="text" name="path" id="path" class="form-control" placeholder="{{ "now"|date("Ymd") }}-example-post.md">
 						{% else %}
 							<div class="input-group-addon">content/</div>
-							<input type="text" name="path" id="path" class="form-control" placeholder="example-page.md">
+						{% endif %}
+						<input type="text" name="path" class="form-control" value="{{ path }}" readonly>
+						{% if view_url %}
+							<div class="input-group-addon">
+								<a href="{{ view_url }}" target="_blank"><span class="glyphicon glyphicon-eye-open"></span> View</a>
+							</div>
 						{% endif %}
 					</div>
 				</div>
 				<div class="form-group header-editor">
 					<label for="header">Header (YAML)</label>
-					<textarea name="header" id="header" rows="5" class="form-control">title: </textarea>
+					<textarea name="header" id="header" rows="5" class="form-control">{{ header }}</textarea>
 				</div>
 				<div class="form-group content-editor">
 					<label for="content">Content (Markdown)</label>
-					<textarea name="content" id="content" rows="20" class="form-control"></textarea>
+					<textarea name="content" id="content" rows="20" class="form-control">{{ content }}</textarea>
 				</div>
-				<input type="submit" value="Create {{ label }}" class="btn btn-primary">
+				<input type="submit" value="Save {{ label }}" class="btn btn-primary">
 			</form>
 		</div>
 	</div>

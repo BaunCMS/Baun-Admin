@@ -3,7 +3,12 @@
 {% block title %}Create User - {% endblock %}
 
 {% block content %}
+	{% if logged_in %}
+	<div id="create-user">
+		<div class="well">
+	{% else %}
 	<div id="created-user" class="col-sm-4 col-sm-offset-4" style="margin-top:50px;">
+	{% endif %}
 		<h1>User Created</h1>
 		<p>A user has been successfully generated. You need to copy this information into the
 		<code>users</code> section of<br>
@@ -22,7 +27,12 @@
     ]
 
 ];</code></pre>
+		{% if not logged_in %}
 		<p>Once this has been completed you can continue.</p>
 		<a href="{{ base_url }}/admin/login" class="btn btn-primary">Continue</a>
+		{% endif %}
+	{% if logged_in %}
+		</div>
+	{% endif %}
 	</div>
 {% endblock %}

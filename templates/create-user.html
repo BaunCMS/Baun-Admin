@@ -3,9 +3,16 @@
 {% block title %}Create User - {% endblock %}
 
 {% block content %}
+	{% if logged_in %}
+	<div id="create-user">
+		<div class="well">
+	{% else %}
 	<div id="create-user" class="col-sm-4 col-sm-offset-4" style="margin-top:50px;">
+	{% endif %}
 		<h1>Create User</h1>
+		{% if not logged_in %}
 		<p>Before you can login to the Baun Admin you need to create a user using the form below.</p>
+		{% endif %}
 		{% if error %}
 			<div class="alert alert-danger" role="alert">{{ error }}</div>
 		{% endif %}
@@ -20,5 +27,8 @@
 			</div>
 			<input type="submit" value="Create" class="btn btn-primary">
 		</form>
+	{% if logged_in %}
+		</div>
+	{% endif %}
 	</div>
 {% endblock %}

@@ -1,0 +1,28 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Users - {% endblock %}
+
+{% block content %}
+	<div id="users">
+		<div class="well">
+			<a href="{{ base_url }}/admin/create-user" class="btn btn-primary pull-right">Create User</a>
+			<h1>Users</h1>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Email</th>
+						<th>Role</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for user in users %}
+						<tr>
+							<td>{{ user.email }}</td>
+							<td>{{ user.role }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+{% endblock %}

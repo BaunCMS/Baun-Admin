@@ -1,0 +1,64 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Posts - {% endblock %}
+
+{% block content %}
+	<div id="posts">
+		<div class="well">
+			<a href="{{ base_url }}/admin/posts/create" class="btn btn-primary pull-right">Create Post</a>
+			<h1>Posts</h1>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Page</th>
+						<th>Path</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for post in posts %}
+						<tr>
+							<td>{{ post.title }}</td>
+							<td>{{ post.route }}</td>
+							<td>{{ post.path }}</td>
+							<td style="text-align:right;">
+								<a href="{{ base_url }}/{% if post.route != '/' %}{{ post.route }}{% endif %}" target="_blank" class="view"><span class="glyphicon glyphicon-eye-open"></span> View</a>
+								<a href="{{ base_url }}/admin/posts/edit?file={{ post.path|url_encode }}" class="edit"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+								<a href="{{ base_url }}/admin/posts/delete?file={{ post.path|url_encode }}" class="delete"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			{% if pagination.total_pages > 1 %}
+				<nav>
+					<ul class="pagination">
+						{% if pagination.current_page > 1 %}
+							<li><a href="{{ base_url }}/admin/posts?page={{ pagination.current_page - 1 }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+						{% endif %}
+						{% for i in 1..pagination.total_pages %}
+							{% if i == pagination.current_page %}
+								<li class="active"><a href="#">{{ i }}</a></li>
+							{% else %}
+								<li><a href="{{ base_url }}/admin/posts?page={{ i }}">{{ i }}</a></li>
+							{% endif %}
+						{% endfor %}
+						{% if pagination.current_page < pagination.total_pages %}
+							<li><a href="{{ base_url }}/admin/posts?page={{ pagination.current_page + 1 }}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+						{% endif %}
+					</ul>
+				</nav>
+			{% endif %}
+		</div>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+	<script>
+	$('.delete').on('click', function(){
+		return confirm('Are you sure you want to delete this post?');
+	});
+	</script>
+{% endblock %}

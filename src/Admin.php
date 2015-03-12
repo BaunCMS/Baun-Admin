@@ -11,6 +11,7 @@ class Admin extends Plugin {
 	protected $users;
 
 	private $adminPages;
+	private $adminPosts;
 
 	public function init()
 	{
@@ -19,6 +20,8 @@ class Admin extends Plugin {
 
 		$this->license_key = $this->config->get('plugins-bauncms-baun-admin-admin.license_key');
 		$this->users = $this->config->get('plugins-bauncms-baun-admin-admin.users');
+
+		new License($this->license_key);
 
 		$this->adminPages = new Pages(
 			$this->config,
@@ -31,7 +34,23 @@ class Admin extends Plugin {
 		$this->adminPages->init();
 
 		$this->theme->addPath(dirname(__DIR__) . '/templates');
+		$this->events->addListener('baun.getFiles', [$this, 'setupPosts']);
 		$this->events->addListener('baun.afterSetupRoutes', [$this, 'setupRoutes']);
+	}
+
+	public function setupPosts()
+	{
+		if ($this->config->get('baun.blog_path')) {
+			$this->adminPosts = new Posts(
+				$this->config,
+				$this->session,
+				$this->events,
+				$this->router,
+				$this->theme,
+				$this->contentParser
+			);
+			$this->adminPosts->init();
+		}
 	}
 
 	public function setupRoutes()
@@ -61,9 +80,13 @@ class Admin extends Plugin {
 
 		$this->router->group(['before' => ['users', 'auth']], function(){
 			$this->router->add('GET', '/admin/logout', [$this, 'routeLogout']);
+			$this->router->add('GET', '/admin/users', [$this, 'routeUsers']);
 		});
 
 		$this->adminPages->setupRoutes();
+		if (isset($this->adminPosts)) {
+			$this->adminPosts->setupRoutes();
+		}
 	}
 
 	public function routeCreateUser()
@@ -132,10 +155,11 @@ class Admin extends Plugin {
 		return header('Location: ' . $this->config->get('app.base_url') . '/admin/login');
 	}
 
-	public function routePages()
+	public function routeUsers()
 	{
 		$data = $this->getGlobalTemplateData();
-		return $this->theme->render('pages', $data);
+		$data['users'] = $this->users;
+		return $this->theme->render('users', $data);
 	}
 
 	protected function getGlobalTemplateData()
@@ -143,6 +167,7 @@ class Admin extends Plugin {
 		return [
 			'base_url' => $this->config->get('app.base_url'),
 			'logged_in' => $this->session->get('logged_in'),
+			'blog_path' => $this->config->get('baun.blog_path'),
 		];
 	}
 

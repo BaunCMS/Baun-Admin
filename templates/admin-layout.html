@@ -28,6 +28,10 @@
 			<div id="navbar" class="collapse navbar-collapse">
 				<ul class="nav navbar-nav">
 					<li><a href="{{ base_url }}/admin">Pages</a></li>
+					{% if blog_path %}
+					<li><a href="{{ base_url }}/admin/posts">Posts</a></li>
+					{% endif %}
+					<li><a href="{{ base_url }}/admin/users">Users</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li><a href="{{ base_url }}/admin/logout">Logout</a></li>
@@ -40,6 +44,14 @@
 	<div class="container">
 		{% block content %}{% endblock %}
 	</div>
+
+	{% if logged_in %}
+	<footer class="footer container">
+		Powered by <a href="http://bauncms.com">Baun</a> /
+		<a href="http://bauncms.com/docs">Documentation</a> /
+		<a href="mailto:support@bauncms.com">Support</a>
+	</footer>
+	{% endif %}
 
 	<script>var base_url = '{{ base_url }}';</script>
 	<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>

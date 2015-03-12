@@ -1,3 +1,31 @@
 body { background: #eee; }
 
 h1 { margin: 0 0 0.5em; }
+
+.well {
+	background: #fff;
+	padding: 30px;
+	margin-bottom: 30px;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.footer {
+	color: #999;
+	margin-bottom: 30px;
+}
+
+.pagination { margin-bottom: 0; }
+
+table .view,
+table .edit,
+table .delete { margin-left: 10px; }
+
+.header-editor .CodeMirror,
+.content-editor .CodeMirror {
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+.header-editor .CodeMirror { height: 100px; }
+.content-editor .CodeMirror { height: 500px; }

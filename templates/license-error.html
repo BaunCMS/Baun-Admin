@@ -1,0 +1,13 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Login - {% endblock %}
+
+{% block content %}
+	<div id="license-error" class="col-sm-6 col-sm-offset-3" style="margin-top:50px;">
+		<h1>Valid License Required</h1>
+		<p>Before you can start using this plugin, you need to have a valid license.</p>
+		{% if error %}
+			<div class="alert alert-danger" role="alert">{{ error }}</div>
+		{% endif %}
+	</div>
+{% endblock %}

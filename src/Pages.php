@@ -62,17 +62,49 @@ class Pages extends Base {
 		$data['type'] = 'page';
 		$data['label'] = 'Page';
 		$data['form_action'] = $this->config->get('app.base_url') . '/admin/pages/create';
+		$data['folders'] = $this->getFolders();
 
-		return $this->theme->render('create', $data);
+		return $this->theme->render('create-' . $this->getEditorType(), $data);
 	}
 
 	public function routePostPagesCreate()
 	{
 		$data = $this->getGlobalTemplateData();
+		$data['folders'] = $this->getFolders();
 
-		$path = isset($_POST['path']) ? $_POST['path'] : null;
-		$header = isset($_POST['header']) ? trim($_POST['header']) : null;
-		$content = isset($_POST['content']) ? trim($_POST['content']) : null;
+		if ($this->getEditorType() == 'advanced') {
+			$path = isset($_POST['path']) ? $_POST['path'] : null;
+			$header = isset($_POST['header']) ? trim($_POST['header']) : null;
+			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
+		} else {
+			$title = isset($_POST['title']) ? filter_var($_POST['title'], FILTER_SANITIZE_STRING) : null;
+			$description = isset($_POST['description']) ? filter_var($_POST['description'], FILTER_SANITIZE_STRING) : null;
+			$order = isset($_POST['order']) ? filter_var($_POST['order'], FILTER_SANITIZE_NUMBER_INT) : null;
+			$folder = isset($_POST['folder']) ? $_POST['folder'] : null;
+			$new_folder = isset($_POST['new_folder']) ? $_POST['new_folder'] : null;
+			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
+
+			$path = '';
+			if ($slug = $this->slugify($title)) {
+				$path = $folder;
+				if ($folder == 'new') {
+					$path = trim($new_folder, '/');
+				}
+				$path .= '/';
+				if ($order) {
+					$path .= $order . '-';
+				}
+				$path .= $slug . $this->config->get('app.content_extension');
+			}
+
+			$header = '';
+			if ($title) {
+				$header .= 'title: ' . $title . "\n";
+			}
+			if ($description) {
+				$header .= 'description: ' . $description . "\n";
+			}
+		}
 
 		if (!$path) {
 			$data['error'] = 'A valid file path is required';
@@ -91,7 +123,7 @@ class Pages extends Base {
 			$data['error'] = 'A page already exists at this path';
 		}
 		if (isset($data['error'])) {
-			return $this->theme->render('create', $data);
+			return $this->theme->render('create-' . $this->getEditorType(), $data);
 		}
 
 		if (!is_dir($path)) {
@@ -106,11 +138,12 @@ class Pages extends Base {
 	public function routePagesEdit()
 	{
 		$data = $this->getGlobalTemplateData();
+		$file = $this->getFileFromQuerySting();
+
 		$data['type'] = 'page';
 		$data['label'] = 'Page';
-		$data['form_action'] = $this->config->get('app.base_url') . '/admin/pages/edit';
-
-		$file = $this->getFileFromQuerySting();
+		$data['form_action'] = $this->config->get('app.base_url') . '/admin/pages/edit?file=' . urlencode($file);
+		$data['folders'] = $this->getFolders();
 		$data['page'] = $this->findPage('path', $file, $this->pages);
 
 		if (!$data['page']) {
@@ -124,16 +157,41 @@ class Pages extends Base {
 		$data['header'] = isset($args[0]) ? $args[0] : '';
 		$data['content'] = isset($args[1]) ? $args[1] : '';
 
-		return $this->theme->render('edit', $data);
+		$parsedInput = $this->contentParser->parse($input);
+		$data['title'] = isset($parsedInput['info']['title']) ? $parsedInput['info']['title'] : '';
+		$data['description'] = isset($parsedInput['info']['description']) ? $parsedInput['info']['description'] : '';
+		$data['folder'] = (dirname($data['page']['path']) == '.' ? '/' : dirname($data['page']['path']));
+
+		return $this->theme->render('edit-' . $this->getEditorType(), $data);
 	}
 
 	public function routePostPagesEdit()
 	{
 		$data = $this->getGlobalTemplateData();
+		$data['folders'] = $this->getFolders();
 
-		$path = isset($_POST['path']) ? $_POST['path'] : null;
-		$header = isset($_POST['header']) ? trim($_POST['header']) : null;
-		$content = isset($_POST['content']) ? trim($_POST['content']) : null;
+		$file = $this->getFileFromQuerySting();
+		$page = $this->findPage('path', $file, $this->pages);
+
+		if ($this->getEditorType() == 'advanced') {
+			$path = isset($_POST['path']) ? $_POST['path'] : null;
+			$header = isset($_POST['header']) ? trim($_POST['header']) : null;
+			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
+		} else {
+			$title = isset($_POST['title']) ? filter_var($_POST['title'], FILTER_SANITIZE_STRING) : null;
+			$description = isset($_POST['description']) ? filter_var($_POST['description'], FILTER_SANITIZE_STRING) : null;
+			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
+
+			$path = $page['path'];
+
+			$header = '';
+			if ($title) {
+				$header .= 'title: ' . $title . "\n";
+			}
+			if ($description) {
+				$header .= 'description: ' . $description . "\n";
+			}
+		}
 
 		if (!$path) {
 			$data['error'] = 'A valid file path is required';
@@ -149,7 +207,7 @@ class Pages extends Base {
 		}
 		$path = dirname($this->config->get('app.content_path') . $path);
 		if (isset($data['error'])) {
-			return $this->theme->render('edit', $data);
+			return $this->theme->render('edit-' . $this->getEditorType(), $data);
 		}
 
 		$output = implode("\n----\n", [$header, $content]);
@@ -171,6 +229,20 @@ class Pages extends Base {
 		$this->removeEmptySubFolders($this->config->get('app.content_path'));
 
 		return header('Location: ' . $this->config->get('app.base_url') . '/admin');
+	}
+
+	private function getFolders()
+	{
+		$folders = [];
+
+		foreach ($this->pages as $page) {
+			$folder = dirname($page['path']);
+			if ($folder != '.') {
+				$folders[] = $folder;
+			}
+		}
+
+		return $folders;
 	}
 
 }

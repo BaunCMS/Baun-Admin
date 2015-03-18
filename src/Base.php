@@ -74,4 +74,23 @@ class Base {
 		return $empty;
 	}
 
+	protected function getEditorType()
+	{
+		if ($this->config->get('plugins-bauncms-baun-admin-admin.editor') == 'advanced') {
+			return 'advanced';
+		}
+
+		return 'simple';
+	}
+
+	protected function slugify($text)
+	{
+		$text = preg_replace('~[^\\pL\d]+~u', '-', $text);
+		$text = trim($text, '-');
+		$text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+		$text = strtolower($text);
+		$text = preg_replace('~[^-\w]+~', '', $text);
+		return $text;
+	}
+
 }

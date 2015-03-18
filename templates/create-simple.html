@@ -1,0 +1,78 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Create {{ label }} - {% endblock %}
+
+{% block content %}
+	<div id="create-{{ type }}">
+		<div class="well">
+			<h1>Create {{ label }}</h1>
+			{% if error %}
+				<div class="alert alert-danger" role="alert">{{ error }}</div>
+			{% endif %}
+			<form method="post" action="{{ form_action }}">
+				<div class="form-group">
+					<label for="title">Title</label>
+					<input type="text" name="title" id="title" class="form-control">
+				</div>
+				<div class="form-group">
+					<label for="description">Description (for search engines)</label>
+					<input type="text" name="description" id="description" class="form-control" placeholder="(optional)">
+				</div>
+				{% if folders %}
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-group">
+							<label for="folder">Folder</label>
+							<select name="folder" id="folder" class="form-control">
+								<option value="">- Default Folder -</option>
+								{% for folder in folders %}
+									<option value="{{ folder }}">{{ folder }}</option>
+								{% endfor %}
+								<option value="new">New Folder...</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-6">
+				{% endif %}
+						<div class="form-group">
+							<label for="order">{% if blog_path_base %}Published (yyymmdd){% else %}Order (optional){% endif %}</label>
+							<input type="text" name="order" id="order" class="form-control">
+						</div>
+				{% if folders %}
+					</div>
+				</div>
+				<div class="form-group new-folder-group">
+					<label for="new_folder">New folder path</label>
+					<input type="text" name="new_folder" id="new_folder" class="form-control" placeholder="example/sub-folder">
+				</div>
+				{% endif %}
+				<div class="form-group content-editor">
+					<label for="content">Content</label>
+					<textarea name="content" id="content" rows="20" class="form-control" data-provide="markdown"></textarea>
+				</div>
+				<input type="submit" value="Create {{ label }}" class="btn btn-primary">
+			</form>
+		</div>
+	</div>
+{% endblock %}
+
+{% block styles %}
+	<link rel="stylesheet" href="{{ base_url }}/assets/plugins/bauncms/baun-admin/bootstrap-markdown/css/bootstrap-markdown.min.css">
+{% endblock %}
+
+{% block scripts %}
+	<script src="{{ base_url }}/assets/plugins/bauncms/baun-admin/markdown-js/markdown.js"></script>
+	<script src="{{ base_url }}/assets/plugins/bauncms/baun-admin/bootstrap-markdown/js/bootstrap-markdown.js"></script>
+	<script>
+	$(document).ready(function() {
+		$('.new-folder-group').hide();
+		$('#folder').on('change', function(){
+			if ($(this).find('option:selected').val() == 'new') {
+				$('.new-folder-group').show();
+			} else {
+				$('.new-folder-group').hide();
+			}
+		});
+	});
+	</script>
+{% endblock %}

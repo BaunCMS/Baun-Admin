@@ -60,7 +60,7 @@ class Posts extends Base {
 		$data['form_action'] = $this->config->get('app.base_url') . '/admin/posts/create';
 		$data['blog_path_base'] = str_replace($this->config->get('app.content_path'), '', $this->config->get('baun.blog_path'));
 
-		return $this->theme->render('create', $data);
+		return $this->theme->render('create-' . $this->getEditorType(), $data);
 	}
 
 	public function routePostPostsCreate()
@@ -88,7 +88,7 @@ class Posts extends Base {
 			$data['error'] = 'A post already exists at this path';
 		}
 		if (isset($data['error'])) {
-			return $this->theme->render('create', $data);
+			return $this->theme->render('create-' . $this->getEditorType(), $data);
 		}
 
 		if (!is_dir($path)) {
@@ -103,12 +103,12 @@ class Posts extends Base {
 	public function routePostsEdit()
 	{
 		$data = $this->getGlobalTemplateData();
+		$file = $this->getFileFromQuerySting();
+
 		$data['type'] = 'post';
 		$data['label'] = 'Post';
-		$data['form_action'] = $this->config->get('app.base_url') . '/admin/posts/edit';
+		$data['form_action'] = $this->config->get('app.base_url') . '/admin/posts/edit?file=' . urlencode($file);
 		$data['blog_path_base'] = str_replace($this->config->get('app.content_path'), '', $this->config->get('baun.blog_path'));
-
-		$file = $this->getFileFromQuerySting();
 		$data['page'] = $this->findPage('path', $file, $this->posts);
 
 		if (!$data['page']) {
@@ -122,7 +122,11 @@ class Posts extends Base {
 		$data['header'] = isset($args[0]) ? $args[0] : '';
 		$data['content'] = isset($args[1]) ? $args[1] : '';
 
-		return $this->theme->render('edit', $data);
+		$parsedInput = $this->contentParser->parse($input);
+		$data['title'] = isset($parsedInput['info']['title']) ? $parsedInput['info']['title'] : '';
+		$data['description'] = isset($parsedInput['info']['description']) ? $parsedInput['info']['description'] : '';
+
+		return $this->theme->render('edit-' . $this->getEditorType(), $data);
 	}
 
 	public function routePostPostsEdit()
@@ -147,7 +151,7 @@ class Posts extends Base {
 		}
 		$path = dirname($this->config->get('baun.blog_path') . '/' . $path);
 		if (isset($data['error'])) {
-			return $this->theme->render('edit', $data);
+			return $this->theme->render('edit-' . $this->getEditorType(), $data);
 		}
 
 		$output = implode("\n----\n", [$header, $content]);

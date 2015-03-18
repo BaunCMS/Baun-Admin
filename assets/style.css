@@ -53,3 +53,9 @@ table .delete { margin-left: 10px; }
 }
 .header-editor .CodeMirror { height: 100px; }
 .content-editor .CodeMirror { height: 500px; }
+
+.content-editor .md-editor > textarea {
+	background-color: #fff;
+	padding: 12px;
+}
+.content-editor .md-editor > .md-preview { padding: 12px; }

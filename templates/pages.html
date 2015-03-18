@@ -12,6 +12,7 @@
 					<tr>
 						<th>Page</th>
 						<th>Path</th>
+						<th>Last Edited</th>
 						<th></th>
 					</tr>
 				</thead>
@@ -20,6 +21,7 @@
 						<tr>
 							<td>{{ page.route }}</td>
 							<td>{{ page.path }}</td>
+							<td>{{ page.updated }}</td>
 							<td style="text-align:right;">
 								<a href="{{ base_url }}/{% if page.route != '/' %}{{ page.route }}{% endif %}" target="_blank" class="view"><span class="glyphicon glyphicon-eye-open"></span> View</a>
 								<a href="{{ base_url }}/admin/pages/edit?file={{ page.path|url_encode }}" class="edit"><span class="glyphicon glyphicon-pencil"></span> Edit</a>

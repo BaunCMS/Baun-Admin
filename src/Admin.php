@@ -169,6 +169,7 @@ class Admin extends Plugin {
 			'base_url' => $this->config->get('app.base_url'),
 			'logged_in' => $this->session->get('logged_in'),
 			'blog_path' => $this->config->get('baun.blog_path'),
+			'current_uri' => $this->router->currentUri(),
 		];
 	}
 

@@ -12,6 +12,9 @@ class Pages extends Base {
 	public function getPages($event, $pages)
 	{
 		$this->pages = $pages;
+		foreach ($this->pages as $key => $page) {
+			$this->pages[$key]['updated'] = date('j M Y \- H:i', filemtime($this->config->get('app.content_path') . $page['path']));
+		}
 	}
 
 	public function setupRoutes()

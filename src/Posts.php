@@ -18,7 +18,7 @@ class Posts extends Base {
 
 	public function setupRoutes()
 	{
-		$this->router->group(['before' => ['users', 'auth']], function(){
+		$this->router->group(['before' => ['csrf', 'users', 'auth']], function(){
 			$this->router->add('GET',  '/admin/posts', [$this, 'routePosts']);
 			$this->router->add('GET',  '/admin/posts/create', [$this, 'routePostsCreate']);
 			$this->router->add('POST', '/admin/posts/create', [$this, 'routePostPostsCreate']);

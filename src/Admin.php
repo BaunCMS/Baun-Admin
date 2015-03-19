@@ -2,11 +2,13 @@
 
 use Baun\Plugin;
 use BaunPlugin\Admin\Pages;
+use EasyCSRF\EasyCSRF;
 use Symfony\Component\HttpFoundation\Session\Session;
 
 class Admin extends Plugin {
 
 	protected $session;
+	protected $csrf;
 	protected $license_key;
 	protected $users;
 
@@ -19,6 +21,8 @@ class Admin extends Plugin {
 		$this->session = new Session();
 		$this->session->start();
 
+		$this->csrf = new EasyCSRF(new CustomCSRFSessionProvider($this->session));
+
 		$this->license_key = $this->config->get('plugins-bauncms-baun-admin-admin.license_key');
 		$this->users = $this->config->get('plugins-bauncms-baun-admin-admin.users');
 
@@ -27,6 +31,7 @@ class Admin extends Plugin {
 		$this->adminPages = new Pages(
 			$this->config,
 			$this->session,
+			$this->csrf,
 			$this->events,
 			$this->router,
 			$this->theme,
@@ -45,6 +50,7 @@ class Admin extends Plugin {
 			$this->adminPosts = new Posts(
 				$this->config,
 				$this->session,
+				$this->csrf,
 				$this->events,
 				$this->router,
 				$this->theme,
@@ -56,6 +62,17 @@ class Admin extends Plugin {
 
 	public function setupRoutes()
 	{
+		$this->router->filter('csrf', function(){
+			if (!empty($_POST)) {
+				try {
+					if (!isset($_POST['token'])) $_POST['token'] = '';
+					$this->csrf->check('baun-admin', $_POST['token']);
+				}
+				catch(Exception $e) {
+					die('Error: Invalid token');
+				}
+			}
+		});
 		$this->router->filter('users', function(){
 			if (empty($this->users)) {
 				header('Location: ' . $this->config->get('app.base_url') . '/admin/create-user');
@@ -71,15 +88,17 @@ class Admin extends Plugin {
 			}
 		});
 
-		$this->router->add('GET',  '/admin/create-user', [$this, 'routeCreateUser']);
-		$this->router->add('POST', '/admin/create-user', [$this, 'routePostCreateUser']);
+		$this->router->group(['before' => ['csrf']], function(){
+			$this->router->add('GET',  '/admin/create-user', [$this, 'routeCreateUser']);
+			$this->router->add('POST', '/admin/create-user', [$this, 'routePostCreateUser']);
+		});
 
-		$this->router->group(['before' => ['users']], function(){
+		$this->router->group(['before' => ['csrf', 'users']], function(){
 			$this->router->add('GET',  '/admin/login', [$this, 'routeLogin']);
 			$this->router->add('POST', '/admin/login', [$this, 'routePostLogin']);
 		});
 
-		$this->router->group(['before' => ['users', 'auth']], function(){
+		$this->router->group(['before' => ['csrf', 'users', 'auth']], function(){
 			$this->router->add('GET', '/admin/logout', [$this, 'routeLogout']);
 			$this->router->add('GET', '/admin/users', [$this, 'routeUsers']);
 		});
@@ -170,6 +189,7 @@ class Admin extends Plugin {
 			'logged_in' => $this->session->get('logged_in'),
 			'blog_path' => $this->config->get('baun.blog_path'),
 			'current_uri' => $this->router->currentUri(),
+			'token' => $this->csrf->generate('baun-admin'),
 		];
 	}
 

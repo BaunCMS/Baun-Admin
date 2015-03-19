@@ -19,7 +19,7 @@ class Pages extends Base {
 
 	public function setupRoutes()
 	{
-		$this->router->group(['before' => ['users', 'auth']], function(){
+		$this->router->group(['before' => ['csrf', 'users', 'auth']], function(){
 			$this->router->add('GET',  '/admin', [$this, 'routePages']);
 			$this->router->add('GET',  '/admin/pages', [$this, 'routePages']);
 			$this->router->add('GET',  '/admin/pages/create', [$this, 'routePagesCreate']);

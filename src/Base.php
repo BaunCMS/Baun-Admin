@@ -4,15 +4,17 @@ class Base {
 
 	protected $config;
 	protected $session;
+	protected $csrf;
 	protected $events;
 	protected $router;
 	protected $theme;
 	protected $contentParser;
 
-	public function __construct($config, $session, $eventProvider, $routerProvider, $themeProvider, $contentParser)
+	public function __construct($config, $session, $csrf, $eventProvider, $routerProvider, $themeProvider, $contentParser)
 	{
 		$this->config = $config;
 		$this->session = $session;
+		$this->csrf = $csrf;
 		$this->events = $eventProvider;
 		$this->router = $routerProvider;
 		$this->theme = $themeProvider;
@@ -32,6 +34,7 @@ class Base {
 			'blog_path' => $this->config->get('baun.blog_path'),
 			'current_uri' => $this->router->currentUri(),
 			'successes' => $this->session->getFlashBag()->get('success'),
+			'token' => $this->csrf->generate('baun-admin'),
 		];
 	}
 

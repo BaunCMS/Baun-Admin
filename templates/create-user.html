@@ -25,6 +25,7 @@
 				<label for="password">Password</label>
 				<input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
 			</div>
+			<input type="hidden" name="token" value="{{ token }}">
 			<input type="submit" value="Create" class="btn btn-primary">
 		</form>
 	{% if logged_in %}

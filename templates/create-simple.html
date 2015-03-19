@@ -53,6 +53,7 @@
 					<label for="content">Content</label>
 					<textarea name="content" id="content" rows="20" class="form-control" data-provide="markdown"></textarea>
 				</div>
+				<input type="hidden" name="token" value="{{ token }}">
 				<input type="submit" value="Create {{ label }}" class="btn btn-primary">
 			</form>
 		</div>

@@ -10,7 +10,8 @@
     ],
     "require": {
         "symfony/http-foundation": "~2.6",
-        "ircmaxell/password-compat": "~1.0.4"
+        "ircmaxell/password-compat": "~1.0.4",
+        "gilbitron/easycsrf": "~1.0"
     },
     "autoload": {
         "psr-4": {

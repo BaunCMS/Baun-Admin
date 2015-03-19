@@ -70,7 +70,9 @@ class Posts extends Base {
 	{
 		$post = $_POST;
 		$post['folder'] = $this->blog_path_base;
-		if ($this->getEditorType() == 'simple') {
+		if ($this->getEditorType() == 'advanced') {
+			$post['path'] = $this->blog_path_base . '/' . $post['path'];
+		} else {
 			if (strtotime($post['order'])) {
 				$post['order'] = date('Ymd', strtotime($post['order']));
 			} else {
@@ -131,7 +133,9 @@ class Posts extends Base {
 
 		$post = $_POST;
 		$post['folder'] = $this->blog_path_base;
-		if ($this->getEditorType() == 'simple') {
+		if ($this->getEditorType() == 'advanced') {
+			$post['path'] = $this->blog_path_base . '/' . $post['path'];
+		} else {
 			if (strtotime($post['order'])) {
 				$post['order'] = date('Ymd', strtotime($post['order']));
 			} else {

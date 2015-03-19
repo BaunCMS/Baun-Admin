@@ -112,6 +112,7 @@ class Admin extends Plugin {
 	public function routeCreateUser()
 	{
 		$data = $this->getGlobalTemplateData();
+		$data['errors'] = $this->session->getFlashBag()->get('error');
 		return $this->theme->render('create-user', $data);
 	}
 
@@ -123,7 +124,7 @@ class Admin extends Plugin {
 		$password = isset($_POST['password']) ? $_POST['password'] : null;
 
 		if (!$email || !$password) {
-			$data['error'] = 'Both an email address and password are required';
+			$this->session->getFlashBag()->add('error', 'Both an email address and password are required');
 			return $this->theme->render('create-user', $data);
 		}
 
@@ -138,30 +139,29 @@ class Admin extends Plugin {
 	public function routeLogin()
 	{
 		$data = $this->getGlobalTemplateData();
+		$data['errors'] = $this->session->getFlashBag()->get('error');
 		return $this->theme->render('login', $data);
 	}
 
 	public function routePostLogin()
 	{
-		$data = $this->getGlobalTemplateData();
-
 		$email = isset($_POST['email']) ? $_POST['email'] : null;
 		$password = isset($_POST['password']) ? $_POST['password'] : null;
 
 		if (!$email || !$password) {
-			$data['error'] = 'Both an email address and password are required';
+			$this->session->getFlashBag()->add('error', 'Both an email address and password are required');
 		}
-		if (!isset($this->users[$email])) {
-			$data['error'] = 'No user exists for this email address';
+		if (!$this->session->getFlashBag()->has('error') && !isset($this->users[$email])) {
+			$this->session->getFlashBag()->add('error', 'No user exists for this email address');
 		}
-		if (!isset($this->users[$email]['password'])) {
-			$data['error'] = 'This user has no password set';
+		if (!$this->session->getFlashBag()->has('error') && !isset($this->users[$email]['password'])) {
+			$this->session->getFlashBag()->add('error', 'This user has no password set');
 		}
-		if (!password_verify($password, $this->users[$email]['password'])) {
-			$data['error'] = 'Invalid password';
+		if (!$this->session->getFlashBag()->has('error') && !password_verify($password, $this->users[$email]['password'])) {
+			$this->session->getFlashBag()->add('error', 'Invalid password');
 		}
-		if (isset($data['error'])) {
-			return $this->theme->render('login', $data);
+		if ($this->session->getFlashBag()->has('error')) {
+			return header('Location: ' . $this->config->get('app.base_url') . '/admin/login');
 		}
 
 		$this->session->set('logged_in', true);

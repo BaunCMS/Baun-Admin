@@ -6,17 +6,20 @@
 	<div id="create-{{ type }}">
 		<div class="well">
 			<h1>Create {{ label }}</h1>
-			{% if error %}
-				<div class="alert alert-danger" role="alert">{{ error }}</div>
-			{% endif %}
+			{% for error in errors %}
+				<div class="alert alert-danger alert-dismissible" role="alert">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					{{ error }}
+				</div>
+			{% endfor %}
 			<form method="post" action="{{ form_action }}">
 				<div class="form-group">
-					<label for="title">Title</label>
+					<label for="title">Title *</label>
 					<input type="text" name="title" id="title" class="form-control">
 				</div>
 				<div class="form-group">
 					<label for="description">Description (for search engines)</label>
-					<input type="text" name="description" id="description" class="form-control" placeholder="(optional)">
+					<input type="text" name="description" id="description" class="form-control">
 				</div>
 				{% if folders %}
 				<div class="row">
@@ -28,14 +31,14 @@
 								{% for folder in folders %}
 									<option value="{{ folder }}">{{ folder }}</option>
 								{% endfor %}
-								<option value="new">New Folder...</option>
+								<option value="_new_">New Folder...</option>
 							</select>
 						</div>
 					</div>
 					<div class="col-md-6">
 				{% endif %}
 						<div class="form-group">
-							<label for="order">{% if blog_path_base %}Published (yyymmdd){% else %}Order (optional){% endif %}</label>
+							<label for="order">{% if blog_path_base %}Published (yyyymmdd){% else %}Order{% endif %}</label>
 							<input type="text" name="order" id="order" class="form-control">
 						</div>
 				{% if folders %}

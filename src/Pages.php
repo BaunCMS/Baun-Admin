@@ -63,75 +63,18 @@ class Pages extends Base {
 		$data['label'] = 'Page';
 		$data['form_action'] = $this->config->get('app.base_url') . '/admin/pages/create';
 		$data['folders'] = $this->getFolders();
+		$data['errors'] = $this->session->getFlashBag()->get('error');
 
 		return $this->theme->render('create-' . $this->getEditorType(), $data);
 	}
 
 	public function routePostPagesCreate()
 	{
-		$data = $this->getGlobalTemplateData();
-		$data['folders'] = $this->getFolders();
-
-		if ($this->getEditorType() == 'advanced') {
-			$path = isset($_POST['path']) ? $_POST['path'] : null;
-			$header = isset($_POST['header']) ? trim($_POST['header']) : null;
-			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
-		} else {
-			$title = isset($_POST['title']) ? filter_var($_POST['title'], FILTER_SANITIZE_STRING) : null;
-			$description = isset($_POST['description']) ? filter_var($_POST['description'], FILTER_SANITIZE_STRING) : null;
-			$order = isset($_POST['order']) ? filter_var($_POST['order'], FILTER_SANITIZE_NUMBER_INT) : null;
-			$folder = isset($_POST['folder']) ? $_POST['folder'] : null;
-			$new_folder = isset($_POST['new_folder']) ? $_POST['new_folder'] : null;
-			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
-
-			$path = '';
-			if ($slug = $this->slugify($title)) {
-				$path = $folder;
-				if ($folder == 'new') {
-					$path = trim($new_folder, '/');
-				}
-				$path .= '/';
-				if ($order) {
-					$path .= $order . '-';
-				}
-				$path .= $slug . $this->config->get('app.content_extension');
-			}
-
-			$header = '';
-			if ($title) {
-				$header .= 'title: ' . $title . "\n";
-			}
-			if ($description) {
-				$header .= 'description: ' . $description . "\n";
-			}
+		if ($this->saveFile($_POST, $this->pages) === false) {
+			return header('Location: ' . $this->config->get('app.base_url') . '/admin/pages/create');
 		}
 
-		if (!$path) {
-			$data['error'] = 'A valid file path is required';
-		}
-		if (!is_writable($this->config->get('app.content_path'))) {
-			$data['error'] = 'The content folder is not writeable';
-		}
-
-		$path = strtolower(preg_replace('/(\.\.\/+)/', '', $path));
-		$filename = basename($path);
-		if (!$this->endsWith($filename, $this->config->get('app.content_extension'))) {
-			$filename = $filename . $this->config->get('app.content_extension');
-		}
-		$path = dirname($this->config->get('app.content_path') . $path);
-		if (file_exists($path . '/' . $filename)) {
-			$data['error'] = 'A page already exists at this path';
-		}
-		if (isset($data['error'])) {
-			return $this->theme->render('create-' . $this->getEditorType(), $data);
-		}
-
-		if (!is_dir($path)) {
-			mkdir($path, 0777, true);
-		}
-		$output = implode("\n----\n", [$header, $content]);
-		file_put_contents($path . '/' . $filename, $output);
-
+		$this->session->getFlashBag()->add('success', 'Page created');
 		return header('Location: ' . $this->config->get('app.base_url') . '/admin');
 	}
 
@@ -144,82 +87,54 @@ class Pages extends Base {
 		$data['label'] = 'Page';
 		$data['form_action'] = $this->config->get('app.base_url') . '/admin/pages/edit?file=' . urlencode($file);
 		$data['folders'] = $this->getFolders();
-		$data['page'] = $this->findPage('path', $file, $this->pages);
+		$data['errors'] = $this->session->getFlashBag()->get('error');
 
-		if (!$data['page']) {
+		$page = $this->findFile('path', $file, $this->pages);
+		if (!$page) {
 			return header('Location: ' . $this->config->get('app.base_url') . '/admin/404');
 		}
-		$data['view_url'] = $this->config->get('app.base_url') . ($data['page']['route'] != '/' ? '/' . $data['page']['route'] : '');
 
-		$input = file_get_contents($this->config->get('app.content_path') . $data['page']['path']);
-		$args = explode('----', $input, 2);
+		$pageContents = file_get_contents($this->config->get('app.content_path') . $page['path']);
+		$args = explode('----', $pageContents, 2);
 		$data['path'] = $file;
 		$data['header'] = isset($args[0]) ? $args[0] : '';
 		$data['content'] = isset($args[1]) ? $args[1] : '';
 
-		$parsedInput = $this->contentParser->parse($input);
+		$parsedInput = $this->contentParser->parse($pageContents);
 		$data['title'] = isset($parsedInput['info']['title']) ? $parsedInput['info']['title'] : '';
 		$data['description'] = isset($parsedInput['info']['description']) ? $parsedInput['info']['description'] : '';
-		$data['folder'] = (dirname($data['page']['path']) == '.' ? '/' : dirname($data['page']['path']));
+		$data['current_folder'] = (dirname($page['path']) == '.' ? '/' : dirname($page['path']));
+		if (preg_match('/^\d+\-/', basename($page['path']))) {
+			list($order, $path) = explode('-', basename($page['path']), 2);
+			$data['order'] = $order;
+		}
+
+		$data['view_url'] = $this->config->get('app.base_url') . ($page['route'] != '/' ? '/' . $page['route'] : '');
 
 		return $this->theme->render('edit-' . $this->getEditorType(), $data);
 	}
 
 	public function routePostPagesEdit()
 	{
-		$data = $this->getGlobalTemplateData();
-		$data['folders'] = $this->getFolders();
-
 		$file = $this->getFileFromQuerySting();
-		$page = $this->findPage('path', $file, $this->pages);
 
-		if ($this->getEditorType() == 'advanced') {
-			$path = isset($_POST['path']) ? $_POST['path'] : null;
-			$header = isset($_POST['header']) ? trim($_POST['header']) : null;
-			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
-		} else {
-			$title = isset($_POST['title']) ? filter_var($_POST['title'], FILTER_SANITIZE_STRING) : null;
-			$description = isset($_POST['description']) ? filter_var($_POST['description'], FILTER_SANITIZE_STRING) : null;
-			$content = isset($_POST['content']) ? trim($_POST['content']) : null;
-
-			$path = $page['path'];
-
-			$header = '';
-			if ($title) {
-				$header .= 'title: ' . $title . "\n";
-			}
-			if ($description) {
-				$header .= 'description: ' . $description . "\n";
-			}
+		$page = $this->findFile('path', $file, $this->pages);
+		if (!$page) {
+			return header('Location: ' . $this->config->get('app.base_url') . '/admin/404');
 		}
 
-		if (!$path) {
-			$data['error'] = 'A valid file path is required';
-		}
-		if (!is_writable($this->config->get('app.content_path'))) {
-			$data['error'] = 'The content folder is not writeable';
+		if (($savedFile = $this->saveFile($_POST, $this->pages, $file)) === false) {
+			return header('Location: ' . $this->config->get('app.base_url') . '/admin/pages/edit?file=' . urlencode($file));
 		}
 
-		$path = strtolower(preg_replace('/(\.\.\/+)/', '', $path));
-		$filename = basename($path);
-		if (!$this->endsWith($filename, $this->config->get('app.content_extension'))) {
-			$filename = $filename . $this->config->get('app.content_extension');
-		}
-		$path = dirname($this->config->get('app.content_path') . $path);
-		if (isset($data['error'])) {
-			return $this->theme->render('edit-' . $this->getEditorType(), $data);
-		}
-
-		$output = implode("\n----\n", [$header, $content]);
-		file_put_contents($path . '/' . $filename, $output);
-
-		return header('Location: ' . $this->config->get('app.base_url') . '/admin');
+		$this->session->getFlashBag()->add('success', 'Page saved');
+		return header('Location: ' . $this->config->get('app.base_url') . '/admin/pages/edit?file=' . urlencode($savedFile));
 	}
 
 	public function routePagesDelete()
 	{
 		$file = $this->getFileFromQuerySting();
-		$page = $this->findPage('path', $file, $this->pages);
+		$page = $this->findFile('path', $file, $this->pages);
 
 		if (!$page) {
 			return header('Location: ' . $this->config->get('app.base_url') . '/admin/404');
@@ -228,6 +143,7 @@ class Pages extends Base {
 		unlink($this->config->get('app.content_path') . $page['path']);
 		$this->removeEmptySubFolders($this->config->get('app.content_path'));
 
+		$this->session->getFlashBag()->add('success', 'Page deleted');
 		return header('Location: ' . $this->config->get('app.base_url') . '/admin');
 	}
 
@@ -238,7 +154,7 @@ class Pages extends Base {
 		foreach ($this->pages as $page) {
 			$folder = dirname($page['path']);
 			if ($folder != '.') {
-				$folders[] = $folder;
+				$folders[$folder] = $folder;
 			}
 		}
 

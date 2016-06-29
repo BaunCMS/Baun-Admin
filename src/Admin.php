@@ -9,10 +9,8 @@ class Admin extends Plugin {
 
 	protected $session;
 	protected $csrf;
-	protected $license_key;
 	protected $users;
 
-	private $license;
 	private $adminPages;
 	private $adminPosts;
 
@@ -23,10 +21,7 @@ class Admin extends Plugin {
 
 		$this->csrf = new EasyCSRF(new CustomCSRFSessionProvider($this->session));
 
-		$this->license_key = $this->config->get('plugins-bauncms-baun-admin-admin.license_key');
 		$this->users = $this->config->get('plugins-bauncms-baun-admin-admin.users');
-
-		$this->license = new License($this->license_key, $this->theme);
 
 		$this->adminPages = new Pages(
 			$this->config,
@@ -80,8 +75,6 @@ class Admin extends Plugin {
 			}
 		});
 		$this->router->filter('auth', function(){
-			$this->license->validate_license();
-
 			if (!$this->session->get('logged_in')) {
 				header('Location: ' . $this->config->get('app.base_url') . '/admin/login');
 				return false;
